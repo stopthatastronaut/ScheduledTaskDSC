@@ -162,7 +162,7 @@ Function Test-TargetResource
         Write-Verbose "Ensure in service: ${Task.Ensure} "
 
         Write-Verbose "Arguments requested: $arguments"
-        Write-Verbose "Arguments in service"
+        Write-Verbose "Arguments in service: ${Task.Arguments}"
 
         $TaskOK = $false # it either exists when it shouldn't, or it doesn't exist when it should
                          # return false here and let Set-TargetResource do its job
@@ -212,10 +212,10 @@ Function Set-TargetResource
         # in a CD pipeline, we frankly don't care.
         # it will be better to remove all actions and triggers, and retain the task, maybe. Future addition
 
-        if((Get-ScheduledTask | ? {$_.TaskName -eq $Name} | measure | select -expand Count) -gt 0)
+        if((Get-ScheduledTask | ? {$_.TaskName -eq $Name -and $_TaskPath -eq $TaskPath } | measure | select -expand Count) -gt 0)
         {
             Write-Verbose "Task exists and must be updated, therefore deleting old and creating new"
-            Unregister-ScheduledTask -TaskName $Name
+            Unregister-ScheduledTask -TaskName $Name -TaskPath $TaskPath
 
 
             # here, you'll update triggers and actions, while preserving the Task (for logging etc). Future code.
@@ -244,16 +244,14 @@ Function Set-TargetResource
                                                     -RepetitionInterval (New-TimeSpan -Hours 1) `
                                                     -RepetitionDuration ([timespan]::MaxValue) `
                                                     -Once # [timespan]::MaxValue disables the expiry of repetitions
-                #$trigger.RepetitionDuration = $null
             }
             "Custom" {
                 $trigger = New-ScheduledTaskTrigger -At $At `
                                                     -RepetitionInterval (New-TimeSpan -Minutes $intervalMinutes) `
                                                     -RepetitionDuration ([timespan]::MaxValue) `
                                                     -Once 
-                #$trigger.RepetitionDuration = $null
             }
-            Default { #also once 
+            Default { # also once 
                 $trigger = New-ScheduledTaskTrigger -At $At -Once 
             }
         }
@@ -268,7 +266,7 @@ Function Set-TargetResource
                                 -Trigger $trigger `
                                 -Settings $settings `
                                 -Description "Added by DSC" `
-                                -TaskPath "\ScheduledTaskDSC\" `
+                                -TaskPath $TaskPath `
                                 -RunLevel 1 `
                                 -Verbose 
                                 
