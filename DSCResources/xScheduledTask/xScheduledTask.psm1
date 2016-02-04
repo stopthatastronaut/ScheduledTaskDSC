@@ -47,7 +47,7 @@ Function Get-TargetResource
         $TaskPath = "\ScheduledTaskDSC\"
     )
 
-    $Tasks = Get-ScheduledTask -TaskPath $TaskPath | ? { $_.TaskName -eq $Name }
+    $Tasks = Get-ScheduledTask | ? { $_.TaskName -eq $Name -and $_.TaskPath -eq $TaskPath }
 
     if($Tasks.count -gt 0)
     {
