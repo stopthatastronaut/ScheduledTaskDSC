@@ -1,0 +1,46 @@
+TOPIC
+	about_DSCResource_RobotPlatoon
+	
+SHORT DESCRIPTION
+	The RobotPlatoon Resource configures customised AWS Autoscaling groups in the Domain Robot Army
+	
+LONG DESCRIPTION
+	Domain's Microservice architecture requires compact, performant, high-availability microclusters.
+	These are provided by the Robot Army.
+	Version 2.0 of the Robot Army is driven by PowerShell DSC 
+	
+ATTRIBUTES
+	Ensure 					- "Present|Absent"
+	Name  					- unique name for the cluster, usually prefixed with 's' for staging, 'p' for production, and so on
+	OctopusProject 			- Project Name in Octopus Deploy
+	OctopusRole 			- Role name in OctopusDeploy
+	InstanceType 			- AWS Instance sizing - usually a t2.small for staging clusters, t2.medium of m3.medium for production
+	VPC 					- AWS VPC into which this cluster will be provisioned. Can be 'Staging', 'Production' or 'UAT'. STaging and UAT are co-tenanted in the same AWS VPC at present
+	HealthCheckEndpoint 	- ELB healthchecks need an endpoint to check. usually this is HTTP:80/ping, TCP:80, or HTTP:80/about 
+	MinSize 				- Minimum Cluster Size
+	MaxSize 				- Do I really have to tell you?
+	AMI 					- Amazon Machine Image. Optional. If omitted, this defaults to the latest Windows 2012 R2 Core Edition AMI
+	PublicInstances 		- allows provisioning of EC2 instances into the Public subnets, whereas ordinarily they would be private
+
+SYNTAX
+
+	RobotPlatoon stagingExampleService
+	{
+		Ensure = "Present"
+		Name = "s-audit-svc"                     # required
+		OctopusProject = "Audit Service"         # required
+		OctopusRole = "audit-service"            # optional. If omitted, infers octopus Role from OctopusProject
+		InstanceType = "t2.small"                # optional, defaults to m3.medium
+		VPC = "Staging"                          # required
+		HealthCheckEndpoint = "HTTP:80/ping"     # optional, defaults to HTTP:80/ping
+		MinSize = 2                              # optional, defaults to 2. Can be set to zero
+		MaxSize = 3                              # optional, defaults to 4. Can be set to zero
+		AMI = "ami-7da8c647"                     # optional, defaults to the latest Windows Core
+		PublicInstances = $true                  # optional, defaults to false. Notable exception is the Push service, which requires instances in the public subnet
+	}
+	
+LINKS
+	https://bitbucket.org/fairfax/domain-robotarmyv2 
+	http://tech.domain.com.au/2015/01/robot-army-v2-0/ 
+	
+	

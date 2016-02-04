@@ -1,0 +1,15 @@
+#pragma classflags ("forceupdate")
+
+[ClassVersion("1.0.0"),FriendlyName("xScheduledTask")] 
+class xScheduledTask : OMI_BaseResource
+{
+	[Key] string Name;
+	[write,ValueMap{"Present", "Absent"},Values{"Present", "Absent"}] string Ensure;
+	[write] string Execute;
+	[write] string Arguments;
+	[write] string At;
+	[write] string Repeat;
+	[write] string IntervalMinutes;
+	[write] string UserName;
+	[write] string TaskPath;
+};
