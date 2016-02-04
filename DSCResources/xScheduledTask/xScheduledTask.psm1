@@ -161,6 +161,8 @@ Function Test-TargetResource
         Write-Verbose "Ensure requested: $Ensure "
         Write-Verbose "Ensure in service: ${Task.Ensure} "
 
+        Write-Verbose "Arguments requested: $arguments"
+        Write-Verbose "Arguments in service"
 
         $TaskOK = $false # it either exists when it shouldn't, or it doesn't exist when it should
                          # return false here and let Set-TargetResource do its job
@@ -240,14 +242,14 @@ Function Set-TargetResource
             "Hourly" {
                 $trigger = New-ScheduledTaskTrigger -At $At `
                                                     -RepetitionInterval (New-TimeSpan -Hours 1) `
-                                                    -RepetitionDuration ([timespan]::MaxValue) ` # how to never expire the repeat
-                                                    -Once 
+                                                    -RepetitionDuration ([timespan]::MaxValue) `
+                                                    -Once # [timespan]::MaxValue disables the expiry of repetitions
                 #$trigger.RepetitionDuration = $null
             }
             "Custom" {
                 $trigger = New-ScheduledTaskTrigger -At $At `
                                                     -RepetitionInterval (New-TimeSpan -Minutes $intervalMinutes) `
-                                                    -RepetitionDuration ([timespan]::MaxValue) ` # how to never expire the repeat
+                                                    -RepetitionDuration ([timespan]::MaxValue) `
                                                     -Once 
                 #$trigger.RepetitionDuration = $null
             }
