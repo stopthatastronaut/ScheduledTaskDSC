@@ -8,9 +8,9 @@ However, I couldn't find a pre-existing DSC resource to manage Scheduled Tasks o
 
 An open DSC resource for managing simple scheduled task in Windows. It'll become more complete and complex over time, but for now it:
 
-Creates new tasks
-Removes unwanted tasks
-Deletes and recreates them if their actions change
+- Creates new tasks
+- Removes unwanted tasks
+- Deletes and recreates them if their actions change
 
 ### Detailed Setup ###
 
@@ -36,6 +36,7 @@ A. Why yes you can. Either in code or in beer, I don't care. As long as it's nic
 
 ### Example ###
 
+```
 configuration ScheduleTest
 {
     Import-DscResource -ModuleName ScheduledTaskDSC
@@ -57,3 +58,4 @@ configuration ScheduleTest
 
 ScheduleTest
 Start-DscConfiguration -Path .\ScheduleTest -verbose -wait -Force
+```
