@@ -141,10 +141,13 @@ Function Test-TargetResource
 
     Write-Verbose "Examining Task name $Name ($TaskName)"
 
-    if($ensure -eq $Task.Ensure -and $Execute -eq $Task.Execute)
+    if($ensure -eq $Task.Ensure -and 
+        $Execute -eq $Task.Execute -and 
+        $Arguments -eq $Task.Arguments
+      )
     {
-        # things are as they should be from an existence PoV. Check things match.
-        # We're doing limited stuff here for now. All we currently care about is if it exists or not, because we're recreating it if it needs to be changed.
+        # things match, to the extent that we're checking them. no worries, McFlurries.
+
         Write-Verbose "Test-TargetResource has detected no drift"
     }
     else

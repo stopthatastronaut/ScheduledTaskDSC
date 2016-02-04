@@ -1,0 +1,6 @@
+## Ignore MOFs
+*.mof
+ScheduleTest
+ScheduleTest/R5001531.mof
+Thumbs.db
+
