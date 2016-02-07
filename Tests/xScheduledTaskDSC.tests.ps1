@@ -2,7 +2,7 @@ ipmo pester
 
 $splat = @{
             "Ensure" = "Present"
-            "Name" = "xScheudledTaskDSC Pester Test ScheduledTask"
+            "Name" = "xScheduledTaskDSC Pester Test ScheduledTask"
             "Arguments" = " -noprofile -command `"Get-Website`""
             "Execute" = "powershell.exe"
             "At" = "9:30AM"
@@ -13,7 +13,7 @@ $splat = @{
         
 $badsplat = @{
             "Ensure" = "Present"
-            "Name" = "xScheudledTaskDSC Pester Test ScheduledTask"
+            "Name" = "xScheduledTaskDSC Pester Test ScheduledTask"
             "Arguments" = " -noprofile -command `"Get-Website`""
             "Execute" = "powershell.exe"
             "At" = "9:30AM"
@@ -23,7 +23,7 @@ $badsplat = @{
 
 $removesplat  = @{
             "Ensure" = "Absent"
-            "Name" = "xScheudledTaskDSC Pester Test ScheduledTask"
+            "Name" = "xScheduledTaskDSC Pester Test ScheduledTask"
             "Arguments" = " -noprofile -command `"Get-Website`""
             "Execute" = "powershell.exe"
             "At" = "9:30AM"
@@ -34,8 +34,8 @@ $removesplat  = @{
 
 
 Describe "Top level repo tests" {
-    It "includes some documentation" {
-
+    It "includes some documentation" { # not a very good test yet.
+        test-Path .\en-US\About_DSCResource_xScheduledTask.help.txt | Should Be $true
     }
 }
 
