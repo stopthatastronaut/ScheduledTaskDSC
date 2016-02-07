@@ -46,6 +46,10 @@ Function Get-TargetResource
         $UserName = "SYSTEM", #  Always runs as a BUILTIN principal. ValidateSet should ideally allow LocalSystem, LocalService or NetworkService
         $TaskPath = "\ScheduledTaskDSC\"
     )
+    
+    if(($Repeat -eq "Custom") -and ($IntervalMinutes -eq "" -or $IntervalMinutes -eq "")) {
+        throw "`r`nIf using Custom Repetition, you must supply the `$intervalMinutes parameter"
+    }
 
     $Tasks = Get-ScheduledTask | ? { $_.TaskName -eq $Name -and $_.TaskPath -eq $TaskPath }
 
@@ -200,6 +204,10 @@ Function Set-TargetResource
         $UserName = "SYSTEM", #  Always runs as a BUILTIN principal. ValidateSet should ideally allow LocalSystem, LocalService or NetworkService
         $TaskPath = "\ScheduledTaskDSC\"
     )
+    
+    if(($Repeat -eq "Custom") -and ($IntervalMinutes -eq "" -or $IntervalMinutes -eq "")) {
+        throw "`r`nIf using Custom Repetition, you must supply the `$intervalMinutes parameter"
+    }
 
     Write-Verbose "Running Set-TargetResource"
 
