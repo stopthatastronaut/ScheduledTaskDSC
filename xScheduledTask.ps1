@@ -12,7 +12,7 @@ configuration ScheduleTest
         {
             Ensure = "Present"
             Name = "Test ScheduledTask"
-            Arguments = " -noprofile -command `"Get-Website`""
+            Arguments = "-noprofile -command `"Get-Service`""
             Execute = "powershell.exe"
             At = "9:30AM"
             Repeat = "Custom"

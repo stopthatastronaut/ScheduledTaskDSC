@@ -53,7 +53,7 @@ Function Get-TargetResource
 
     $Tasks = Get-ScheduledTask | ? { $_.TaskName -eq $Name -and $_.TaskPath -eq $TaskPath }
 
-    if($Tasks.count -gt 0)
+    if(($Tasks | measure | select -expand count) -gt 0)
     {
         # task exists
         Write-Verbose "Task exists, returning Task details as hashtable"
@@ -62,10 +62,10 @@ Function Get-TargetResource
         $getTargetResourceResult = @{
                                         Name = $Task.TaskName
                                         Ensure = $ensureResult
-                                        Execute = $Task.Actions | select -First 1 | select -ExpandProperty Execute
-                                        Arguments = $Task.Actions | select -First 1 | select -ExpandProperty Argument
-                                        At = $Task.Triggers | select -first 1 | select -ExpandProperty StartBoundary 
-                                        Repeat = $Task.Triggers | select -first 1 | select -ExpandProperty Repetition | select -expand Interval
+                                        Execute = ($Task.Actions | select -First 1 | select -ExpandProperty Execute)
+                                        Arguments = ($Task.Actions | select -First 1 | select -ExpandProperty Arguments)
+                                        At = ($Task.Triggers | select -first 1 | select -ExpandProperty StartBoundary) 
+                                        Repeat = ($Task.Triggers | select -first 1 | select -ExpandProperty Repetition | select -expand Interval)
                                         IntervalMinutes = $null
                                         UserName = $Task.Principal.UserId
                                         TaskPath = $TaskPath
@@ -74,6 +74,7 @@ Function Get-TargetResource
     else
     {
         # no task exists
+        Write-Verbose "No task exists, returning DSC Arguments as hashtable"
         $ensureResult = "Absent"
         $getTargetResourceResult = @{
                                         Name = $Name
@@ -125,6 +126,8 @@ Function Test-TargetResource
 
     Write-Verbose "Running Test-TargetResource now"
 
+    # need to Trim() all our arguments
+
     if(($Repeat -eq "Custom") -and ($IntervalMinutes -eq "" -or $IntervalMinutes -eq "")) {
         throw "`r`nIf using Custom Repetition, you must supply the `$intervalMinutes parameter"
     }
@@ -145,9 +148,9 @@ Function Test-TargetResource
 
     Write-Verbose "Examining Task name $Name ($TaskName)"
 
-    if($ensure -eq $Task.Ensure -and 
-        $Execute -eq $Task.Execute -and 
-        $Arguments -eq $Task.Arguments
+    if(($ensure -eq $Task.Ensure) -and 
+        ($Execute -eq $Task.Execute) -and 
+        ($Arguments -eq $Task.Arguments)
       )
     {
         # things match, to the extent that we're checking them. no worries, McFlurries.
@@ -159,14 +162,18 @@ Function Test-TargetResource
         
         Write-Verbose "Test-TargetResource has detected variance from desired state"
 
+        $TaskExecute = $Task.Execute 
+        $TaskEnsure = $Task.Ensure 
+        $TaskArguments = $Task.Arguments
+
         Write-Verbose "Execute requested: $Execute "
-        Write-Verbose "Execute in service: ${Task.Execute} "
+        Write-Verbose "Execute in service: $TaskExecute "
 
         Write-Verbose "Ensure requested: $Ensure "
-        Write-Verbose "Ensure in service: ${Task.Ensure} "
+        Write-Verbose "Ensure in service: $TaskEnsure "
 
         Write-Verbose "Arguments requested: $arguments"
-        Write-Verbose "Arguments in service: ${Task.Arguments}"
+        Write-Verbose "Arguments in service: $TaskArguments"
 
         $TaskOK = $false # it either exists when it shouldn't, or it doesn't exist when it should
                          # return false here and let Set-TargetResource do its job
@@ -220,7 +227,7 @@ Function Set-TargetResource
         # in a CD pipeline, we frankly don't care.
         # it will be better to remove all actions and triggers, and retain the task, maybe. Future addition
 
-        if((Get-ScheduledTask | ? {$_.TaskName -eq $Name -and $_TaskPath -eq $TaskPath } | measure | select -expand Count) -gt 0)
+        if((Get-ScheduledTask | ? {$_.TaskName -eq $Name -and $_.TaskPath -eq $TaskPath } | measure | select -expand Count) -gt 0)
         {
             Write-Verbose "Task exists and must be updated, therefore deleting old and creating new"
             Unregister-ScheduledTask -TaskName $Name -TaskPath $TaskPath

@@ -74,18 +74,20 @@ Describe "Module tests" {
         It "Runs the Get Mock, showing that we ARE checking for existence" {
             Assert-VerifiableMocks
         }
-
         
         It "Returns a hashtable" {
             $returnvalue.GetType() -eq [hashtable] | Should Be $true
         }
-
 
         It "Should fail if you specify Custom Repeat but no interval" {          
             { Get-TargetResource @badsplat } | Should Throw
         }
 
         # set-targetresource
+
+    }
+
+    Context "Let's actually create some tasks" {
 
     }
 
@@ -96,5 +98,5 @@ Describe "Module tests" {
 }
 
 Describe "Testing the tests" {
-    # picks up the example scripts and makes sure they throw nothing
+    # picks up the example scripts and makes sure they do nothing bad
 }
