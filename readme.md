@@ -16,7 +16,7 @@ An open DSC resource for managing simple scheduled task in Windows. It'll become
 
 You will of course need PowerShell v4 and any Desired State Configuration Updates that apply to your system
 
-Tested so far on Windows 8, Server 2012 and 2012 R2. Backward compat is for future testing.
+Tested so far on Windows 8, 8.1, Server 2012 and 2012 R2. Backward compat is for future testing.
 
 ### FAQ ###
 

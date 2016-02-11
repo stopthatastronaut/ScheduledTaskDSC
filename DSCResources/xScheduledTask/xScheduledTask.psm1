@@ -220,24 +220,9 @@ Function Set-TargetResource
 
     if($Ensure -eq "Present")
     {
-        # we're trying to either create or rectify the task. Check if it exists. If it exists, remove.
-        # then recreate.
-        # very brute force, but expressionist painting this is not
-        # you DO lose history this way, but since this resource is designed for Autoscaling Cloud environments...
-        # in a CD pipeline, we frankly don't care.
-        # it will be better to remove all actions and triggers, and retain the task, maybe. Future addition
+        
 
-        if((Get-ScheduledTask | ? {$_.TaskName -eq $Name -and $_.TaskPath -eq $TaskPath } | measure | select -expand Count) -gt 0)
-        {
-            Write-Verbose "Task exists and must be updated, therefore deleting old and creating new"
-            Unregister-ScheduledTask -TaskName $Name -TaskPath $TaskPath
-
-
-            # here, you'll update triggers and actions, while preserving the Task (for logging etc). Future code.
-        }
-
-        # create the task now
-
+        # prep our objects for creation or updating
         $trigger = $null
 
         switch($Repeat)
@@ -245,9 +230,9 @@ Function Set-TargetResource
             "Daily" {
                 $trigger = New-ScheduledTaskTrigger -At $At -Daily
             }
-            "Weekly" {
-                $trigger = New-ScheduledTaskTrigger -At $At -Weekly
-            }
+                    "Weekly" {
+            $trigger = New-ScheduledTaskTrigger -At $At -Weekly
+        }
             "DaysOfWeek" {
                 $trigger = New-ScheduledTaskTrigger -At $At -DaysOfWeek
             }
@@ -271,25 +256,54 @@ Function Set-TargetResource
             }
         }
 
-        $action = New-ScheduledTaskAction -Execute $Execute -Argument $Arguments -Verbose
+        $action = $null
+
+        if($Arguments -eq $null -or $Arguments -eq "")
+        {
+            Write-Verbose "Arguments not provided"
+            $action = New-ScheduledTaskAction -Execute $Execute -Verbose
+        }
+        else
+        {
+            Write-Verbose "Arguments provided"
+            $action = New-ScheduledTaskAction -Execute $Execute -Argument $Arguments -Verbose
+        }
+
+        $date = Get-Date -Format g 
 
         $settings = New-ScheduledTaskSettingsSet -Verbose 
+        if((Get-ScheduledTask | ? {$_.TaskName -eq $Name -and $_.TaskPath -eq $TaskPath } | measure | select -expand Count) -gt 0)
+        {
+            Write-Verbose "Task exists and must be updated"
 
-        Register-ScheduledTask  -TaskName $name `
+            Set-ScheduledTask   -TaskName $name `
                                 -User $UserName `
                                 -Action $action `
                                 -Trigger $trigger `
                                 -Settings $settings `
-                                -Description "Added by DSC" `
                                 -TaskPath $TaskPath `
-                                -RunLevel 1 `
                                 -Verbose 
-                                
+
+         }
+        else
+        {
+            # create the task now
+            Register-ScheduledTask  -TaskName $name `
+                                    -User $UserName `
+                                    -Action $action `
+                                    -Trigger $trigger `
+                                    -Settings $settings `
+                                    -Description "Added by DSC $date" `
+                                    -TaskPath $TaskPath `
+                                    -RunLevel 1 `
+                                    -Verbose 
+        }                     
 
     }
     else
     {
         # delete the thing, I guess
-        Unregister-ScheduledTask -TaskName $Name
+        Write-Verbose "Ensure=`"Absent`" was requested, removing task"
+        Unregister-ScheduledTask -TaskName $Name -Verbose
     }
 }

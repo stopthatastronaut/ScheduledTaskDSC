@@ -4,24 +4,22 @@ configuration ScheduleTest
 
     node (hostname)
     {
-        # Call Resource Provider
-        # E.g: WindowsFeature, File
-
-
         xScheduledTask TestTask
         {
             Ensure = "Present"
             Name = "Test ScheduledTask"
-            Arguments = "-noprofile -command `"Get-Service`""
+            Arguments = " -command `"Get-Date`""
             Execute = "powershell.exe"
             At = "9:30AM"
-            Repeat = "Custom"
-            IntervalMinutes = 20
+            Repeat = "Daily"
+            IntervalMinutes = 1
             UserName = "SYSTEM"
-        }       
+        }
     }
 }
 
 ScheduleTest
 
 Start-DscConfiguration -Path .\ScheduleTest -verbose -wait -Force
+
+# Get-Process wmiprvse | kill -force # use this if you need to refresh the config
