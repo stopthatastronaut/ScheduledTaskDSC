@@ -8,11 +8,10 @@ configuration ScheduleTest
         {
             Ensure = "Present"
             Name = "Test ScheduledTask"
-            Arguments = " -command `"Get-Date`""
+            Arguments = "-command `"Get-Date`""
             Execute = "powershell.exe"
             At = "9:30AM"
             Repeat = "Daily"
-            IntervalMinutes = 1
             UserName = "SYSTEM"
         }
     }

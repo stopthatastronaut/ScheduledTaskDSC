@@ -40,8 +40,9 @@ Function Get-TargetResource
         [string]
         [ValidateSet("Daily", "Weekly", "Once", "DaysOfWeek", "Hourly", "Custom")]
         $Repeat, 
+        [parameter(Mandatory=$false)]
         [int]
-        [ValidateRange(1,1339)] # one minute to one day minus one minute
+        [ValidateRange(0,1339)] # one minute to one day minus one minute
         $IntervalMinutes, # Only usable if Repeat is Custom
         $UserName = "SYSTEM", #  Always runs as a BUILTIN principal. ValidateSet should ideally allow LocalSystem, LocalService or NetworkService
         $TaskPath = "\ScheduledTaskDSC\"
@@ -117,8 +118,9 @@ Function Test-TargetResource
         [string]
         [ValidateSet("Daily", "Weekly", "Once", "DaysOfWeek", "Hourly", "Custom")]
         $Repeat, 
+        [parameter(Mandatory=$false)]
         [int]
-        [ValidateRange(1,1339)] # one minute to one day minus one minute
+        [ValidateRange(0,1339)] # one minute to one day minus one minute
         $IntervalMinutes, # Only useful if $Repeat is "Custom"
         $UserName = "SYSTEM", #  ValidateSet should ideally allow LocalSystem, LocalService or NetworkService
         $TaskPath = "\ScheduledTaskDSC\"
@@ -205,8 +207,9 @@ Function Set-TargetResource
         [string]
         [ValidateSet("Daily", "Weekly", "Once", "DaysOfWeek", "Hourly", "Custom")]
         $Repeat, 
+        [parameter(Mandatory=$false)]
         [int]
-        [ValidateRange(1,1339)] # one minute to one day minus one minute
+        [ValidateRange(0,1339)] # one minute to one day minus one minute
         $IntervalMinutes, # Only usable if Repeat is Custom
         $UserName = "SYSTEM", #  Always runs as a BUILTIN principal. ValidateSet should ideally allow LocalSystem, LocalService or NetworkService
         $TaskPath = "\ScheduledTaskDSC\"
@@ -258,25 +261,28 @@ Function Set-TargetResource
 
         $action = $null
 
+        # TODO: add WorkingDirectory
         if($Arguments -eq $null -or $Arguments -eq "")
         {
             Write-Verbose "Arguments not provided"
-            $action = New-ScheduledTaskAction -Execute $Execute -Verbose
+            $action = New-ScheduledTaskAction -Execute $Execute -Verbose 
         }
         else
         {
             Write-Verbose "Arguments provided"
-            $action = New-ScheduledTaskAction -Execute $Execute -Argument $Arguments -Verbose
+            $action = New-ScheduledTaskAction -Execute $Execute -Argument $Arguments -Verbose 
         }
 
         $date = Get-Date -Format g 
 
+        # TODO: enable options
         $settings = New-ScheduledTaskSettingsSet -Verbose 
+
         if((Get-ScheduledTask | ? {$_.TaskName -eq $Name -and $_.TaskPath -eq $TaskPath } | measure | select -expand Count) -gt 0)
         {
             Write-Verbose "Task exists and must be updated"
 
-            Set-ScheduledTask   -TaskName $name `
+            $taskXML = Set-ScheduledTask   -TaskName $name `
                                 -User $UserName `
                                 -Action $action `
                                 -Trigger $trigger `
@@ -288,7 +294,7 @@ Function Set-TargetResource
         else
         {
             # create the task now
-            Register-ScheduledTask  -TaskName $name `
+            $taskXML = Register-ScheduledTask  -TaskName $name `
                                     -User $UserName `
                                     -Action $action `
                                     -Trigger $trigger `
