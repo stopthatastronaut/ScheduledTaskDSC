@@ -39,7 +39,9 @@ Function Get-TargetResource
         $At,
         [string]
         [ValidateSet("Daily", "Weekly", "Once", "DaysOfWeek", "Hourly", "Custom")]
-        $Repeat, 
+        $Repeat,  
+        [string[]]
+        $Days,  # days of week for when "DaysOfWekk" is used
         [parameter(Mandatory=$false)]
         [int]
         [ValidateRange(0,1339)] # one minute to one day minus one minute
@@ -117,7 +119,9 @@ Function Test-TargetResource
         $At,
         [string]
         [ValidateSet("Daily", "Weekly", "Once", "DaysOfWeek", "Hourly", "Custom")]
-        $Repeat, 
+        $Repeat,  
+        [string[]]
+        $Days,  # days of week for when "DaysOfWekk" is used
         [parameter(Mandatory=$false)]
         [int]
         [ValidateRange(0,1339)] # one minute to one day minus one minute
@@ -207,6 +211,8 @@ Function Set-TargetResource
         [string]
         [ValidateSet("Daily", "Weekly", "Once", "DaysOfWeek", "Hourly", "Custom")]
         $Repeat, 
+        [string[]]
+        $Days,  # days of week for when "DaysOfWekk" is used
         [parameter(Mandatory=$false)]
         [int]
         [ValidateRange(0,1339)] # one minute to one day minus one minute
@@ -233,11 +239,15 @@ Function Set-TargetResource
             "Daily" {
                 $trigger = New-ScheduledTaskTrigger -At $At -Daily
             }
-                    "Weekly" {
-            $trigger = New-ScheduledTaskTrigger -At $At -Weekly
-        }
+            "Weekly" {
+                $dttmp = Get-Date -Date $At 
+                $dayofweek = $dttmp.DayOfWeek
+                $trigger = New-ScheduledTaskTrigger -At $At -Weekly -DaysOfWeek $dayofweek
+                # bug - prompts for "DaysOfWeek"
+            }
             "DaysOfWeek" {
-                $trigger = New-ScheduledTaskTrigger -At $At -DaysOfWeek
+                $trigger = New-ScheduledTaskTrigger -At $At -DaysOfWeek 
+                # bug, so far doesn't take input
             }
             "Once" {
                 $trigger = New-ScheduledTaskTrigger -At $At -Once

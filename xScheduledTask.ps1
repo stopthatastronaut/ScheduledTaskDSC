@@ -6,7 +6,7 @@ configuration ScheduleTest
     {
         xScheduledTask TestTask
         {
-            Ensure = "Present"
+            Ensure = "Absent"
             Name = "Test ScheduledTask"
             Arguments = "-command `"Get-Date`""
             Execute = "powershell.exe"
