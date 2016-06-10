@@ -305,6 +305,7 @@ Function Set-TargetResource
         else
         {
             # create the task now
+            Write-Verbose "Task does not exist, creating"
             $taskXML = Register-ScheduledTask  -TaskName $name `
                                     -User $UserName `
                                     -Action $action `
