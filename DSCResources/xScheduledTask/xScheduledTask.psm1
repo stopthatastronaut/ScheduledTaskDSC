@@ -212,7 +212,7 @@ Function Set-TargetResource
         [ValidateSet("Daily", "Weekly", "Once", "DaysOfWeek", "Hourly", "Custom")]
         $Repeat, 
         [string[]]
-        $Days,  # days of week for when "DaysOfWekk" is used
+        $Days,  # days of week for when "DaysOfWeek" is used
         [parameter(Mandatory=$false)]
         [int]
         [ValidateRange(0,1339)] # one minute to one day minus one minute
@@ -242,7 +242,8 @@ Function Set-TargetResource
             "Weekly" {
                 $dttmp = Get-Date -Date $At 
                 $dayofweek = $dttmp.DayOfWeek
-                $trigger = New-ScheduledTaskTrigger -At $At -Weekly -DaysOfWeek $dayofweek
+                Write-Verbose "Detected $dayofweek as target day"
+                $trigger = New-ScheduledTaskTrigger -At $At -Weekly -DaysOfWeek @($dayofweek) # does it expect an array?
                 # bug - prompts for "DaysOfWeek"
             }
             "DaysOfWeek" {
