@@ -33,8 +33,9 @@ Function Get-TargetResource
         })]
         $Execute,
         $Arguments,
+        [AllowNull()]
         [ValidateScript({
-            [datetime]$_
+            $_ -eq $null -or [DateTime]$_ -is "DateTime"
         })]
         $At,
         [string]
@@ -52,6 +53,12 @@ Function Get-TargetResource
     
     if(($Repeat -eq "Custom") -and ($IntervalMinutes -eq "" -or $IntervalMinutes -eq "")) {
         throw "`r`nIf using Custom Repetition, you must supply the `$intervalMinutes parameter"
+    }
+
+    if($Ensure -eq "Present") {
+        if($At -eq $null) {
+            throw "`r`nIf asserting a schedule task should be present, you must supply the `$At parameter"
+        }
     }
 
     $Tasks = Get-ScheduledTask | ? { $_.TaskName -eq $Name -and $_.TaskPath -eq $TaskPath }
@@ -113,8 +120,9 @@ Function Test-TargetResource
         })]
         $Execute,
         $Arguments,
+        [AllowNull()]
         [ValidateScript({
-            [datetime]$_
+            $_ -eq $null -or [DateTime]$_ -is "DateTime"
         })]
         $At,
         [string]
@@ -134,8 +142,23 @@ Function Test-TargetResource
 
     # need to Trim() all our arguments
 
+    if($Ensure -eq "Absent") {
+        if((Get-ScheduledTask | ? { $_.TaskName -eq $Name -and $_.TaskPath -eq $TaskPath } |
+            measure | select -Expand Count) -gt 0)
+        {
+            Write-Verbose "Found task: $TaskName, even though it is supposed to be absent."
+            return $false
+        }
+        return $true
+    }
+
+
     if(($Repeat -eq "Custom") -and ($IntervalMinutes -eq "" -or $IntervalMinutes -eq "")) {
         throw "`r`nIf using Custom Repetition, you must supply the `$intervalMinutes parameter"
+    }
+
+    if($At -eq $null) {
+        throw "`r`nIf asserting a schedule task should be present, you must supply the `$At parameter"
     }
 
     $Task = Get-TargetResource  -Name $Name `
@@ -204,8 +227,9 @@ Function Set-TargetResource
         })]
         $Execute,
         $Arguments,
+        [AllowNull()]
         [ValidateScript({
-            [datetime]$_
+            $_ -eq $null -or [DateTime]$_ -is "DateTime"
         })]
         $At,
         [string]
@@ -229,7 +253,9 @@ Function Set-TargetResource
 
     if($Ensure -eq "Present")
     {
-        
+        if($At -eq $null) {
+            throw "`r`nIf asserting a schedule task should be present, you must supply the `$At parameter"
+        }
 
         # prep our objects for creation or updating
         $trigger = $null
