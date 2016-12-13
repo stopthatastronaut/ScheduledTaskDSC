@@ -24,12 +24,6 @@ $badsplat = @{
 $removesplat  = @{
             "Ensure" = "Absent"
             "Name" = "xScheduledTaskDSC Pester Test ScheduledTask"
-            "Arguments" = " -noprofile -command `"Get-Website`""
-            "Execute" = "powershell.exe"
-            "At" = "9:30AM"
-            "Repeat" = "Custom"
-            "IntervalMinutes" = 20
-            "UserName" = "SYSTEM"
           } # standard splat for tests
 
 
