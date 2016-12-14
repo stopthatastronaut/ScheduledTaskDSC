@@ -12,4 +12,5 @@ class xScheduledTask : OMI_BaseResource
 	[write] uint64 IntervalMinutes;
 	[write] string UserName;
 	[write] string TaskPath;
+	[write] string WorkingDirectory;
 };

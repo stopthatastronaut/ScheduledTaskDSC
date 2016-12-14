@@ -48,7 +48,8 @@ Function Get-TargetResource
         [ValidateRange(0,1339)] # one minute to one day minus one minute
         $IntervalMinutes, # Only usable if Repeat is Custom
         $UserName = "SYSTEM", #  Always runs as a BUILTIN principal. ValidateSet should ideally allow LocalSystem, LocalService or NetworkService
-        $TaskPath = "\ScheduledTaskDSC\"
+        $TaskPath = "\ScheduledTaskDSC\",
+        $WorkingDirectory
     )
     
     if(($Repeat -eq "Custom") -and ($IntervalMinutes -eq "" -or $IntervalMinutes -eq "")) {
@@ -135,7 +136,8 @@ Function Test-TargetResource
         [ValidateRange(0,1339)] # one minute to one day minus one minute
         $IntervalMinutes, # Only useful if $Repeat is "Custom"
         $UserName = "SYSTEM", #  ValidateSet should ideally allow LocalSystem, LocalService or NetworkService
-        $TaskPath = "\ScheduledTaskDSC\"
+        $TaskPath = "\ScheduledTaskDSC\",
+        $WorkingDirectory
     )
 
     Write-Verbose "Running Test-TargetResource now"
@@ -242,7 +244,8 @@ Function Set-TargetResource
         [ValidateRange(0,1339)] # one minute to one day minus one minute
         $IntervalMinutes, # Only usable if Repeat is Custom
         $UserName = "SYSTEM", #  Always runs as a BUILTIN principal. ValidateSet should ideally allow LocalSystem, LocalService or NetworkService
-        $TaskPath = "\ScheduledTaskDSC\"
+        $TaskPath = "\ScheduledTaskDSC\",
+        $WorkingDirectory
     )
     
     if(($Repeat -eq "Custom") -and ($IntervalMinutes -eq "" -or $IntervalMinutes -eq "")) {
@@ -260,6 +263,8 @@ Function Set-TargetResource
         # prep our objects for creation or updating
         $trigger = $null
 
+        $maxtime = [timespan]::MaxValue # - (New-Timespan -hours 24)    # -repetitionduration $maxtime
+
         switch($Repeat)
         {
             "Daily" {
@@ -269,11 +274,12 @@ Function Set-TargetResource
                 $dttmp = Get-Date -Date $At 
                 $dayofweek = $dttmp.DayOfWeek
                 Write-Verbose "Detected $dayofweek as target day"
-                $trigger = New-ScheduledTaskTrigger -At $At -Weekly -DaysOfWeek @($dayofweek) # does it expect an array?
+                $trigger = New-ScheduledTaskTrigger -At $At -Weekly -DaysOfWeek @($dayofweek) 
+                # does this expect an array? Tasks run under OctopusDeploy tentacles are trying to prompt for input, so failing
                 # bug - prompts for "DaysOfWeek"
             }
             "DaysOfWeek" {
-                $trigger = New-ScheduledTaskTrigger -At $At -DaysOfWeek 
+                $trigger = New-ScheduledTaskTrigger -At $At -DaysOfWeek $days
                 # bug, so far doesn't take input
             }
             "Once" {
@@ -282,13 +288,11 @@ Function Set-TargetResource
             "Hourly" {
                 $trigger = New-ScheduledTaskTrigger -At $At `
                                                     -RepetitionInterval (New-TimeSpan -Hours 1) `
-                                                    -RepetitionDuration ([timespan]::MaxValue) `
                                                     -Once # [timespan]::MaxValue disables the expiry of repetitions
             }
             "Custom" {
                 $trigger = New-ScheduledTaskTrigger -At $At `
                                                     -RepetitionInterval (New-TimeSpan -Minutes $intervalMinutes) `
-                                                    -RepetitionDuration ([timespan]::MaxValue) `
                                                     -Once 
             }
             Default { # also once 
@@ -299,15 +303,25 @@ Function Set-TargetResource
         $action = $null
 
         # TODO: add WorkingDirectory
+        if($WorkingDirectory -eq $null -or $WorkingDirectory -eq "") 
+        {
+            $wd = Split-Path -Path $Execute -Parent
+        }
+        else
+        {
+            $wd = $WorkingDirectory
+        }
+
+
         if($Arguments -eq $null -or $Arguments -eq "")
         {
             Write-Verbose "Arguments not provided"
-            $action = New-ScheduledTaskAction -Execute $Execute -Verbose 
+            $action = New-ScheduledTaskAction -Execute $Execute -Verbose -WorkingDirectory $wd
         }
         else
         {
             Write-Verbose "Arguments provided"
-            $action = New-ScheduledTaskAction -Execute $Execute -Argument $Arguments -Verbose 
+            $action = New-ScheduledTaskAction -Execute $Execute -Argument $Arguments -Verbose -WorkingDirectory $wd
         }
 
         $date = Get-Date -Format g 

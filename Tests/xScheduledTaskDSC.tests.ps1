@@ -85,8 +85,12 @@ Describe "Module tests" {
 
     }
 
-    Context "Running module in DSC" {
+    Context "Running module in Non-interactive mode" {
         # not implemented yet
+		
+		
+		
+		
     }
 
 }
