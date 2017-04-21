@@ -32,6 +32,9 @@ Function Get-TargetResource
             $true # temporary
         })]
         $Execute,
+        [ValidateScript({
+            (Get-Command $_) -ne $null
+        })]
         $Arguments,
         [AllowNull()]
         [ValidateScript({
@@ -42,7 +45,7 @@ Function Get-TargetResource
         [ValidateSet("Daily", "Weekly", "Once", "DaysOfWeek", "Hourly", "Custom")]
         $Repeat,  
         [string[]]
-        $Days,  # days of week for when "DaysOfWekk" is used
+        $Days,  # days of week for when "DaysOfWeek" is used
         [parameter(Mandatory=$false)]
         [int]
         [ValidateRange(0,1339)] # one minute to one day minus one minute
@@ -51,6 +54,11 @@ Function Get-TargetResource
         $TaskPath = "\ScheduledTaskDSC\",
         $WorkingDirectory
     )
+
+    # expand out the "Execute" from a short path into a long path using Get-Command
+    # needs validation
+
+    $Execute = Get-Command $execute | select -expand Source
     
     if(($Repeat -eq "Custom") -and ($IntervalMinutes -eq "" -or $IntervalMinutes -eq "")) {
         throw "`r`nIf using Custom Repetition, you must supply the `$intervalMinutes parameter"
@@ -268,9 +276,12 @@ Function Set-TargetResource
         switch($Repeat)
         {
             "Daily" {
+                Write-Verbose "using a Daily Trigger"
                 $trigger = New-ScheduledTaskTrigger -At $At -Daily
             }
             "Weekly" {
+            
+                Write-Verbose "using a Weekly Trigger"
                 $dttmp = Get-Date -Date $At 
                 $dayofweek = $dttmp.DayOfWeek
                 Write-Verbose "Detected $dayofweek as target day"
@@ -278,24 +289,30 @@ Function Set-TargetResource
                 # does this expect an array? Tasks run under OctopusDeploy tentacles are trying to prompt for input, so failing
                 # bug - prompts for "DaysOfWeek"
             }
-            "DaysOfWeek" {
+            "DaysOfWeek" {                
+                Write-Verbose "using a DaysOfWeek Trigger"
                 $trigger = New-ScheduledTaskTrigger -At $At -DaysOfWeek $days
                 # bug, so far doesn't take input
             }
             "Once" {
+                
+                Write-Verbose "using a Once Trigger"
                 $trigger = New-ScheduledTaskTrigger -At $At -Once
             }
-            "Hourly" {
+            "Hourly" {                
+                Write-Verbose "using an Hourly Trigger"
                 $trigger = New-ScheduledTaskTrigger -At $At `
                                                     -RepetitionInterval (New-TimeSpan -Hours 1) `
                                                     -Once # [timespan]::MaxValue disables the expiry of repetitions
             }
-            "Custom" {
+            "Custom" {                
+                Write-Verbose "using a Custom Trigger"
                 $trigger = New-ScheduledTaskTrigger -At $At `
                                                     -RepetitionInterval (New-TimeSpan -Minutes $intervalMinutes) `
                                                     -Once 
             }
-            Default { # also once 
+            Default { # also once                 
+                Write-Verbose "using a Default (once) Trigger"
                 $trigger = New-ScheduledTaskTrigger -At $At -Once 
             }
         }
