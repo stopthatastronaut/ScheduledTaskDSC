@@ -266,7 +266,7 @@ Function Set-TargetResource
         # prep our objects for creation or updating
         $trigger = $null
 
-        $maxtime = [timespan]::MaxValue # - (New-Timespan -hours 24)    # -repetitionduration $maxtime
+        $maxtime = (New-Timespan -Days 10)    # -repetitionduration $maxtime
 
         switch($Repeat)
         {
@@ -298,7 +298,7 @@ Function Set-TargetResource
                 Write-Verbose "using an Hourly Trigger"
                 $trigger = New-ScheduledTaskTrigger -At $At `
                                                     -RepetitionInterval (New-TimeSpan -Hours 1) `
-                                                    -Once # [timespan]::MaxValue disables the expiry of repetitions
+                                                    -Once
             }
             "Custom" {                
                 Write-Verbose "using a Custom Trigger"
