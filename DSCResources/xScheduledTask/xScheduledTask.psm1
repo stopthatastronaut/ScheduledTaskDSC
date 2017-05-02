@@ -120,8 +120,7 @@ Function Test-TargetResource
         $Ensure,
         [string]
         [ValidateScript({
-            # maybe check if the path is resolvable?
-            $true # temporary
+            (Get-Command $_) -ne $null
         })]
         $Execute,
         $Arguments,
@@ -229,7 +228,7 @@ Function Set-TargetResource
         [string]
         [ValidateScript({
             # maybe check if the path is resolvable?
-            $true # temporary
+              (Get-Command $_) -ne $null
         })]
         $Execute,
         $Arguments,
