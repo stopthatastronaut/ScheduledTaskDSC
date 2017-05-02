@@ -298,12 +298,14 @@ Function Set-TargetResource
                 Write-Verbose "using an Hourly Trigger"
                 $trigger = New-ScheduledTaskTrigger -At $At `
                                                     -RepetitionInterval (New-TimeSpan -Hours 1) `
+                                                    -RepetitionDuration (New-TimeSpan -Days 730) `
                                                     -Once
             }
             "Custom" {                
                 Write-Verbose "using a Custom Trigger"
                 $trigger = New-ScheduledTaskTrigger -At $At `
                                                     -RepetitionInterval (New-TimeSpan -Minutes $intervalMinutes) `
+                                                    -RepetitionDuration (New-TimeSpan -Days 730) `
                                                     -Once 
             }
             Default { # also once                 
