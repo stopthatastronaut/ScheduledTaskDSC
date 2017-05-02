@@ -28,15 +28,11 @@ Function Get-TargetResource
         $Ensure,
         [string]
         [ValidateScript({
-            # maybe check if the path is resolvable?
-            $true # temporary
+            (Get-Command $_) -ne $null   # does the command exist?
         })]
-        $Execute,
-        [ValidateScript({
-            (Get-Command $_) -ne $null
-        })]
-        $Arguments,
-        [AllowNull()]
+        $Execute,     
+        $Arguments, 
+        [AllowNull()]  
         [ValidateScript({
             $_ -eq $null -or [DateTime]$_ -is "DateTime"
         })]
