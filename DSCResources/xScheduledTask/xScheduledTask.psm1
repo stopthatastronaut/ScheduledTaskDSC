@@ -376,6 +376,6 @@ Function Set-TargetResource
     {
         # delete the thing, I guess
         Write-Verbose "Ensure=`"Absent`" was requested, removing task"
-        Unregister-ScheduledTask -TaskName $Name -Verbose
+        Unregister-ScheduledTask -TaskName $Name -Verbose -Confirm:$false 
     }
 }
