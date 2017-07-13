@@ -16,6 +16,8 @@ if(-not (Test-Path "$diskroot\DSCResources\xScheduledTask"))
     mkdir "$diskroot\DSCResources\xScheduledTask"
 }
 
-iwr "$gitroot/xScheduledTask/xScheduledTask.psm1" -OutFile  "$diskroot\DSCResources\xScheduledTask\xScheduledTask.psm1" 
-iwr "$gitroot/DSCResources/xScheduledTask/xScheduledTask.schema.mof" -OutFile  "$diskroot\DSCResources\xScheduledTask\xScheduledTask.schema.mof"
-iwr "$gitroot/ScheduledTaskDSC.psd1" -OutFile  "$diskroot\ScheduledTaskDSC.psd1"
+$client = [System.Net.WebClient]::new()
+
+$client.DownloadString("$gitroot/DSCResources/xScheduledTask/xScheduledTask.psm1") | Out-File  "$diskroot\DSCResources\xScheduledTask\xScheduledTask.psm1" 
+$client.DownloadString("$gitroot/DSCResources/xScheduledTask/xScheduledTask.schema.mof") | Out-File  "$diskroot\DSCResources\xScheduledTask\xScheduledTask.schema.mof"
+$client.DownloadString("$gitroot/ScheduledTaskDSC.psd1") | Out-File "$diskroot\ScheduledTaskDSC.psd1"
