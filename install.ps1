@@ -16,7 +16,7 @@ if(-not (Test-Path "$diskroot\DSCResources\xScheduledTask"))
     mkdir "$diskroot\DSCResources\xScheduledTask"
 }
 
-$client = [System.Net.WebClient]::new()
+$client = [System.Net.WebClient]::new()  # can't just invoke-webrequest, due to double-byte chars in github
 
 $client.DownloadString("$gitroot/DSCResources/xScheduledTask/xScheduledTask.psm1") | Out-File  "$diskroot\DSCResources\xScheduledTask\xScheduledTask.psm1" 
 $client.DownloadString("$gitroot/DSCResources/xScheduledTask/xScheduledTask.schema.mof") | Out-File  "$diskroot\DSCResources\xScheduledTask\xScheduledTask.schema.mof"
